@@ -45,3 +45,38 @@ func (s *professionService) GetAll(ctx context.Context, req *pb.GetAllProfession
 
 	return resp, nil
 }
+
+func (s *professionService) GetById(ctx context.Context, req *pb.GetByIdProfessionRequest) (*pb.GetByIdProfessionResponse, error) {
+	resp, err := s.strg.Profession().GetById(ctx, req)
+	if err != nil {
+		s.log.Error("GetByIdProfession", logger.Any("req", req), logger.Error(err))
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *professionService) Update(ctx context.Context, req *pb.UpdateProfessionRequest) (*pb.UpdateProfessionResponse, error) {
+	_, err := s.strg.Profession().Update(ctx, req)
+	if err != nil {
+		s.log.Error("UpdateProfession", logger.Any("req", req), logger.Error(err))
+		return nil, err
+	}
+
+	return &pb.UpdateProfessionResponse{
+		Id:   req.Id,
+		Name: req.Name,
+	}, nil
+}
+
+func (s *professionService) Delete(ctx context.Context, req *pb.DeleteProfessionRequest) (*pb.DeleteProfessionResponse, error) {
+	_, err := s.strg.Profession().Delete(ctx, req)
+	if err != nil {
+		s.log.Error("DeleteProfession", logger.Any("req", req), logger.Error(err))
+		return nil, err
+	}
+
+	return &pb.DeleteProfessionResponse{
+		Id: req.Id,
+	}, nil
+}

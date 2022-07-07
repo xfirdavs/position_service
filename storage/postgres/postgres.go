@@ -11,6 +11,9 @@ import (
 type Store struct {
 	db         *pgxpool.Pool
 	profession storage.ProfessionI
+	attribute  storage.AttributeI
+	position   storage.PositionI
+	posattr    storage.PosAttrI
 }
 
 func NewPostgres(psqlConnString string, cfg config.Config) (storage.StorageI, error) {
@@ -36,4 +39,28 @@ func (s *Store) Profession() storage.ProfessionI {
 	}
 
 	return s.profession
+}
+
+func (s *Store) Attribute() storage.AttributeI {
+	if s.attribute == nil {
+		s.attribute = NewAttributeRepo(s.db)
+	}
+
+	return s.attribute
+}
+
+func (s *Store) Position() storage.PositionI {
+	if s.position == nil {
+		s.position = NewPositionRepo(s.db)
+	}
+
+	return s.position
+}
+
+func (s *Store) PosAttr() storage.PosAttrI {
+	if s.posattr == nil {
+		s.posattr = NewPosAttrRepo(s.db)
+	}
+
+	return s.posattr
 }

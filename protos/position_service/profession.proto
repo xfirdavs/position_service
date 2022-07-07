@@ -8,6 +8,9 @@ import "google/protobuf/empty.proto";
 service ProfessionService {
     rpc Create(CreateProfessionRequest) returns (Profession) {}
     rpc GetAll(GetAllProfessionRequest) returns (GetAllProfessionResponse) {}
+    rpc GetById(GetByIdProfessionRequest) returns (GetByIdProfessionResponse) {}
+    rpc Update(UpdateProfessionRequest) returns (UpdateProfessionResponse) {}
+    rpc Delete(DeleteProfessionRequest) returns (DeleteProfessionResponse) {}
 }
 
 message CreateProfessionRequest {
@@ -28,4 +31,30 @@ message GetAllProfessionRequest {
 message GetAllProfessionResponse {
     repeated Profession professions = 1;
     int32 count = 2;
+}
+
+message GetByIdProfessionRequest {
+    string id = 1;
+}
+
+message GetByIdProfessionResponse {
+    string id = 1;
+    string name = 2;
+}
+
+message UpdateProfessionRequest {
+    string id = 1;
+    string name = 2;
+}
+
+message UpdateProfessionResponse {
+    string id = 1;
+    string name = 2;
+}
+message DeleteProfessionRequest {
+    string id = 1;
+}
+
+message DeleteProfessionResponse {
+    string id = 1;
 }

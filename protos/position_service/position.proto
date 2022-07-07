@@ -1,0 +1,71 @@
+syntax="proto3";
+
+package position_service;
+option go_package="genproto/position_service";
+
+    
+import "google/protobuf/empty.proto";
+
+service PositionService {
+    rpc Create(CreatePositionRequest) returns (Position) {}
+    rpc GetAll(GetAllPositionRequest) returns (GetAllPositionResponse) {}
+    rpc GetById(GetByIdPositionRequest) returns (GetByIdPositionResponse) {}
+    rpc Update(UpdatePositionRequest) returns (UpdatePositionResponse) {}
+    rpc Delete(DeletePositionRequest) returns (DeletePositionResponse) {}
+}
+
+message CreatePositionRequest {
+    string name = 1;
+    string profession_id = 2; 
+    string company_id = 3;
+}
+
+message Position {
+    string id = 1;
+    string name = 2;
+    string profession_id = 3;
+    string company_id = 4;
+}
+
+message GetAllPositionRequest {
+    int32 limit = 1;
+    int32 offset = 2;
+    string search = 3;
+}
+
+message GetAllPositionResponse {
+    repeated Position Positions = 1;
+    int32 count = 2;
+}
+
+message GetByIdPositionRequest {
+    string id = 1;
+}
+
+message GetByIdPositionResponse {
+    string id = 1;
+    string name = 2;
+    string profession_id = 3;
+    string company_id = 4;
+}
+
+message UpdatePositionRequest {
+    string id = 1;
+    string name = 2;
+    string profession_id = 3;
+    string company_id = 4;
+}
+
+message UpdatePositionResponse {
+    string id = 1;
+    string name = 2;
+    string profession_id = 3;
+    string company_id = 4;
+}
+message DeletePositionRequest {
+    string id = 1;
+}
+
+message DeletePositionResponse {
+    string id = 1;
+}

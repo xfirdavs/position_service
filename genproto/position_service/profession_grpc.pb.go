@@ -24,6 +24,9 @@ const _ = grpc.SupportPackageIsVersion7
 type ProfessionServiceClient interface {
 	Create(ctx context.Context, in *CreateProfessionRequest, opts ...grpc.CallOption) (*Profession, error)
 	GetAll(ctx context.Context, in *GetAllProfessionRequest, opts ...grpc.CallOption) (*GetAllProfessionResponse, error)
+	GetById(ctx context.Context, in *GetByIdProfessionRequest, opts ...grpc.CallOption) (*GetByIdProfessionResponse, error)
+	Update(ctx context.Context, in *UpdateProfessionRequest, opts ...grpc.CallOption) (*UpdateProfessionResponse, error)
+	Delete(ctx context.Context, in *DeleteProfessionRequest, opts ...grpc.CallOption) (*DeleteProfessionResponse, error)
 }
 
 type professionServiceClient struct {
@@ -52,12 +55,42 @@ func (c *professionServiceClient) GetAll(ctx context.Context, in *GetAllProfessi
 	return out, nil
 }
 
+func (c *professionServiceClient) GetById(ctx context.Context, in *GetByIdProfessionRequest, opts ...grpc.CallOption) (*GetByIdProfessionResponse, error) {
+	out := new(GetByIdProfessionResponse)
+	err := c.cc.Invoke(ctx, "/position_service.ProfessionService/GetById", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *professionServiceClient) Update(ctx context.Context, in *UpdateProfessionRequest, opts ...grpc.CallOption) (*UpdateProfessionResponse, error) {
+	out := new(UpdateProfessionResponse)
+	err := c.cc.Invoke(ctx, "/position_service.ProfessionService/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *professionServiceClient) Delete(ctx context.Context, in *DeleteProfessionRequest, opts ...grpc.CallOption) (*DeleteProfessionResponse, error) {
+	out := new(DeleteProfessionResponse)
+	err := c.cc.Invoke(ctx, "/position_service.ProfessionService/Delete", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ProfessionServiceServer is the server API for ProfessionService service.
 // All implementations must embed UnimplementedProfessionServiceServer
 // for forward compatibility
 type ProfessionServiceServer interface {
 	Create(context.Context, *CreateProfessionRequest) (*Profession, error)
 	GetAll(context.Context, *GetAllProfessionRequest) (*GetAllProfessionResponse, error)
+	GetById(context.Context, *GetByIdProfessionRequest) (*GetByIdProfessionResponse, error)
+	Update(context.Context, *UpdateProfessionRequest) (*UpdateProfessionResponse, error)
+	Delete(context.Context, *DeleteProfessionRequest) (*DeleteProfessionResponse, error)
 	mustEmbedUnimplementedProfessionServiceServer()
 }
 
@@ -70,6 +103,15 @@ func (UnimplementedProfessionServiceServer) Create(context.Context, *CreateProfe
 }
 func (UnimplementedProfessionServiceServer) GetAll(context.Context, *GetAllProfessionRequest) (*GetAllProfessionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+}
+func (UnimplementedProfessionServiceServer) GetById(context.Context, *GetByIdProfessionRequest) (*GetByIdProfessionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetById not implemented")
+}
+func (UnimplementedProfessionServiceServer) Update(context.Context, *UpdateProfessionRequest) (*UpdateProfessionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
+}
+func (UnimplementedProfessionServiceServer) Delete(context.Context, *DeleteProfessionRequest) (*DeleteProfessionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedProfessionServiceServer) mustEmbedUnimplementedProfessionServiceServer() {}
 
@@ -120,6 +162,60 @@ func _ProfessionService_GetAll_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ProfessionService_GetById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetByIdProfessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfessionServiceServer).GetById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/position_service.ProfessionService/GetById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfessionServiceServer).GetById(ctx, req.(*GetByIdProfessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProfessionService_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProfessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfessionServiceServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/position_service.ProfessionService/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfessionServiceServer).Update(ctx, req.(*UpdateProfessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ProfessionService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteProfessionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProfessionServiceServer).Delete(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/position_service.ProfessionService/Delete",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProfessionServiceServer).Delete(ctx, req.(*DeleteProfessionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ProfessionService_ServiceDesc is the grpc.ServiceDesc for ProfessionService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +230,18 @@ var ProfessionService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAll",
 			Handler:    _ProfessionService_GetAll_Handler,
+		},
+		{
+			MethodName: "GetById",
+			Handler:    _ProfessionService_GetById_Handler,
+		},
+		{
+			MethodName: "Update",
+			Handler:    _ProfessionService_Update_Handler,
+		},
+		{
+			MethodName: "Delete",
+			Handler:    _ProfessionService_Delete_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
