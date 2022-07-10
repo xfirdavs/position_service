@@ -23,18 +23,15 @@ func NewPositionService(cfg config.Config, log logger.LoggerI, strg storage.Stor
 	}
 }
 
-func (s *positionService) Create(ctx context.Context, req *pb.CreatePositionRequest) (*pb.Position, error) {
+func (s *positionService) Create(ctx context.Context, req *pb.CreatePositionRequest) (*pb.PositionId, error) {
 	id, err := s.strg.Position().Create(ctx, req)
 	if err != nil {
 		s.log.Error("CreatePosition", logger.Any("req", req), logger.Error(err))
 		return nil, err
 	}
 
-	return &pb.Position{
-		Id:           id,
-		Name:         req.Name,
-		ProfessionId: req.ProfessionId,
-		CompanyId:    req.CompanyId,
+	return &pb.PositionId{
+		Id: id.Id,
 	}, nil
 }
 
@@ -48,7 +45,7 @@ func (s *positionService) GetAll(ctx context.Context, req *pb.GetAllPositionRequ
 	return resp, nil
 }
 
-func (s *positionService) GetById(ctx context.Context, req *pb.GetByIdPositionRequest) (*pb.GetByIdPositionResponse, error) {
+func (s *positionService) GetById(ctx context.Context, req *pb.PositionId) (*pb.Position, error) {
 	resp, err := s.strg.Position().GetById(ctx, req)
 	if err != nil {
 		s.log.Error("GetByIdPosition", logger.Any("req", req), logger.Error(err))
@@ -58,29 +55,24 @@ func (s *positionService) GetById(ctx context.Context, req *pb.GetByIdPositionRe
 	return resp, nil
 }
 
-func (s *positionService) Update(ctx context.Context, req *pb.UpdatePositionRequest) (*pb.UpdatePositionResponse, error) {
+func (s *positionService) Update(ctx context.Context, req *pb.UpdatePositionRequest) (*pb.PositionId, error) {
 	_, err := s.strg.Position().Update(ctx, req)
 	if err != nil {
 		s.log.Error("UpdatePosition", logger.Any("req", req), logger.Error(err))
 		return nil, err
 	}
 
-	return &pb.UpdatePositionResponse{
-		Id:           req.Id,
-		Name:         req.Name,
-		ProfessionId: req.ProfessionId,
-		CompanyId:    req.CompanyId,
+	return &pb.PositionId{
+		Id: req.Id,
 	}, nil
 }
 
-func (s *positionService) Delete(ctx context.Context, req *pb.DeletePositionRequest) (*pb.DeletePositionResponse, error) {
-	_, err := s.strg.Position().Delete(ctx, req)
+func (s *positionService) Delete(ctx context.Context, req *pb.PositionId) (*pb.PositionId, error) {
+	id, err := s.strg.Position().Delete(ctx, req)
 	if err != nil {
 		s.log.Error("DeletePosition", logger.Any("req", req), logger.Error(err))
 		return nil, err
 	}
 
-	return &pb.DeletePositionResponse{
-		Id: req.Id,
-	}, nil
+	return id, nil
 }

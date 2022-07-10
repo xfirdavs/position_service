@@ -7,65 +7,66 @@ option go_package="genproto/position_service";
 import "google/protobuf/empty.proto";
 
 service PositionService {
-    rpc Create(CreatePositionRequest) returns (Position) {}
+    rpc Create(CreatePositionRequest) returns (PositionId) {}
     rpc GetAll(GetAllPositionRequest) returns (GetAllPositionResponse) {}
-    rpc GetById(GetByIdPositionRequest) returns (GetByIdPositionResponse) {}
-    rpc Update(UpdatePositionRequest) returns (UpdatePositionResponse) {}
-    rpc Delete(DeletePositionRequest) returns (DeletePositionResponse) {}
+    rpc GetById(PositionId) returns (Position) {}
+    rpc Update(UpdatePositionRequest) returns (PositionId) {}
+    rpc Delete(PositionId) returns (PositionId) {}
 }
 
-message CreatePositionRequest {
-    string name = 1;
-    string profession_id = 2; 
-    string company_id = 3;
+message PositionId{
+    string id = 1;
 }
 
-message Position {
+message GetPositionAttributes{
+    string id = 1;
+    string value = 2;
+    string position_id = 3;
+    string attribute_id = 4;
+    string attribute_name = 5;
+    string attribute_type = 6;
+    
+}
+
+message Position{
     string id = 1;
     string name = 2;
     string profession_id = 3;
     string company_id = 4;
+    repeated GetPositionAttributes position_attributes = 5;
+
 }
 
-message GetAllPositionRequest {
+message UpdatePositionRequest{
+    string id = 1;
+    string name = 2;
+    string profession_id = 3;
+    string company_id = 4;
+    repeated PositionAttributes position_attributes = 5;
+
+}
+
+
+
+message PositionAttributes{
+    string attribute_id = 1;
+    string value = 2;
+}
+
+message CreatePositionRequest{
+    string name = 1;
+    string profession_id = 2;
+    string company_id = 3;
+    repeated PositionAttributes position_attributes = 4;
+}
+
+message GetAllPositionRequest{
     int32 limit = 1;
     int32 offset = 2;
     string search = 3;
-}
 
-message GetAllPositionResponse {
-    repeated Position Positions = 1;
+}
+message GetAllPositionResponse{
+    repeated Position positions = 1;
     int32 count = 2;
-}
-
-message GetByIdPositionRequest {
-    string id = 1;
-}
-
-message GetByIdPositionResponse {
-    string id = 1;
-    string name = 2;
-    string profession_id = 3;
-    string company_id = 4;
-}
-
-message UpdatePositionRequest {
-    string id = 1;
-    string name = 2;
-    string profession_id = 3;
-    string company_id = 4;
-}
-
-message UpdatePositionResponse {
-    string id = 1;
-    string name = 2;
-    string profession_id = 3;
-    string company_id = 4;
-}
-message DeletePositionRequest {
-    string id = 1;
-}
-
-message DeletePositionResponse {
-    string id = 1;
 }

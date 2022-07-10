@@ -13,7 +13,6 @@ type StorageI interface {
 	Profession() ProfessionI
 	Attribute() AttributeI
 	Position() PositionI
-	PosAttr() PosAttrI
 }
 
 type ProfessionI interface {
@@ -33,17 +32,9 @@ type AttributeI interface {
 }
 
 type PositionI interface {
-	Create(ctx context.Context, entity *pb.CreatePositionRequest) (id string, err error)
+	Create(ctx context.Context, req *pb.CreatePositionRequest) (*pb.PositionId, error)
 	GetAll(ctx context.Context, req *pb.GetAllPositionRequest) (*pb.GetAllPositionResponse, error)
-	GetById(ctx context.Context, req *pb.GetByIdPositionRequest) (*pb.GetByIdPositionResponse, error)
-	Update(ctx context.Context, entity *pb.UpdatePositionRequest) (*pb.UpdatePositionResponse, error)
-	Delete(ctx context.Context, entity *pb.DeletePositionRequest) (*pb.DeletePositionResponse, error)
-}
-
-type PosAttrI interface {
-	Create(ctx context.Context, entity *pb.CreatePosAttrRequest) (id string, err error)
-	GetAll(ctx context.Context, req *pb.GetAllPosAttrRequest) (*pb.GetAllPosAttrResponse, error)
-	GetById(ctx context.Context, req *pb.GetByIdPosAttrRequest) (*pb.GetByIdPosAttrResponse, error)
-	Update(ctx context.Context, entity *pb.UpdatePosAttrRequest) (*pb.UpdatePosAttrResponse, error)
-	Delete(ctx context.Context, entity *pb.DeletePosAttrRequest) (*pb.DeletePosAttrResponse, error)
+	GetById(ctx context.Context, req *pb.PositionId) (*pb.Position, error)
+	Update(ctx context.Context, entity *pb.UpdatePositionRequest) (*pb.PositionId, error)
+	Delete(ctx context.Context, req *pb.PositionId) (*pb.PositionId, error)
 }

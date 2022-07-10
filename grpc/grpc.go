@@ -17,7 +17,6 @@ func SetUpServer(cfg config.Config, log logger.LoggerI, strg storage.StorageI) (
 	position_service.RegisterProfessionServiceServer(grpcServer, service.NewProfessionService(cfg, log, strg))
 	position_service.RegisterAttributeServiceServer(grpcServer, service.NewAttributeService(cfg, log, strg))
 	position_service.RegisterPositionServiceServer(grpcServer, service.NewPositionService(cfg, log, strg))
-	position_service.RegisterPosAttrServiceServer(grpcServer, service.NewPosAttrService(cfg, log, strg))
 	reflection.Register(grpcServer)
 	return
 }

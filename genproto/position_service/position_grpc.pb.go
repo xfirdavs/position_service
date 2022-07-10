@@ -22,11 +22,11 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PositionServiceClient interface {
-	Create(ctx context.Context, in *CreatePositionRequest, opts ...grpc.CallOption) (*Position, error)
+	Create(ctx context.Context, in *CreatePositionRequest, opts ...grpc.CallOption) (*PositionId, error)
 	GetAll(ctx context.Context, in *GetAllPositionRequest, opts ...grpc.CallOption) (*GetAllPositionResponse, error)
-	GetById(ctx context.Context, in *GetByIdPositionRequest, opts ...grpc.CallOption) (*GetByIdPositionResponse, error)
-	Update(ctx context.Context, in *UpdatePositionRequest, opts ...grpc.CallOption) (*UpdatePositionResponse, error)
-	Delete(ctx context.Context, in *DeletePositionRequest, opts ...grpc.CallOption) (*DeletePositionResponse, error)
+	GetById(ctx context.Context, in *PositionId, opts ...grpc.CallOption) (*Position, error)
+	Update(ctx context.Context, in *UpdatePositionRequest, opts ...grpc.CallOption) (*PositionId, error)
+	Delete(ctx context.Context, in *PositionId, opts ...grpc.CallOption) (*PositionId, error)
 }
 
 type positionServiceClient struct {
@@ -37,8 +37,8 @@ func NewPositionServiceClient(cc grpc.ClientConnInterface) PositionServiceClient
 	return &positionServiceClient{cc}
 }
 
-func (c *positionServiceClient) Create(ctx context.Context, in *CreatePositionRequest, opts ...grpc.CallOption) (*Position, error) {
-	out := new(Position)
+func (c *positionServiceClient) Create(ctx context.Context, in *CreatePositionRequest, opts ...grpc.CallOption) (*PositionId, error) {
+	out := new(PositionId)
 	err := c.cc.Invoke(ctx, "/position_service.PositionService/Create", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -55,8 +55,8 @@ func (c *positionServiceClient) GetAll(ctx context.Context, in *GetAllPositionRe
 	return out, nil
 }
 
-func (c *positionServiceClient) GetById(ctx context.Context, in *GetByIdPositionRequest, opts ...grpc.CallOption) (*GetByIdPositionResponse, error) {
-	out := new(GetByIdPositionResponse)
+func (c *positionServiceClient) GetById(ctx context.Context, in *PositionId, opts ...grpc.CallOption) (*Position, error) {
+	out := new(Position)
 	err := c.cc.Invoke(ctx, "/position_service.PositionService/GetById", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -64,8 +64,8 @@ func (c *positionServiceClient) GetById(ctx context.Context, in *GetByIdPosition
 	return out, nil
 }
 
-func (c *positionServiceClient) Update(ctx context.Context, in *UpdatePositionRequest, opts ...grpc.CallOption) (*UpdatePositionResponse, error) {
-	out := new(UpdatePositionResponse)
+func (c *positionServiceClient) Update(ctx context.Context, in *UpdatePositionRequest, opts ...grpc.CallOption) (*PositionId, error) {
+	out := new(PositionId)
 	err := c.cc.Invoke(ctx, "/position_service.PositionService/Update", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -73,8 +73,8 @@ func (c *positionServiceClient) Update(ctx context.Context, in *UpdatePositionRe
 	return out, nil
 }
 
-func (c *positionServiceClient) Delete(ctx context.Context, in *DeletePositionRequest, opts ...grpc.CallOption) (*DeletePositionResponse, error) {
-	out := new(DeletePositionResponse)
+func (c *positionServiceClient) Delete(ctx context.Context, in *PositionId, opts ...grpc.CallOption) (*PositionId, error) {
+	out := new(PositionId)
 	err := c.cc.Invoke(ctx, "/position_service.PositionService/Delete", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -86,11 +86,11 @@ func (c *positionServiceClient) Delete(ctx context.Context, in *DeletePositionRe
 // All implementations must embed UnimplementedPositionServiceServer
 // for forward compatibility
 type PositionServiceServer interface {
-	Create(context.Context, *CreatePositionRequest) (*Position, error)
+	Create(context.Context, *CreatePositionRequest) (*PositionId, error)
 	GetAll(context.Context, *GetAllPositionRequest) (*GetAllPositionResponse, error)
-	GetById(context.Context, *GetByIdPositionRequest) (*GetByIdPositionResponse, error)
-	Update(context.Context, *UpdatePositionRequest) (*UpdatePositionResponse, error)
-	Delete(context.Context, *DeletePositionRequest) (*DeletePositionResponse, error)
+	GetById(context.Context, *PositionId) (*Position, error)
+	Update(context.Context, *UpdatePositionRequest) (*PositionId, error)
+	Delete(context.Context, *PositionId) (*PositionId, error)
 	mustEmbedUnimplementedPositionServiceServer()
 }
 
@@ -98,19 +98,19 @@ type PositionServiceServer interface {
 type UnimplementedPositionServiceServer struct {
 }
 
-func (UnimplementedPositionServiceServer) Create(context.Context, *CreatePositionRequest) (*Position, error) {
+func (UnimplementedPositionServiceServer) Create(context.Context, *CreatePositionRequest) (*PositionId, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Create not implemented")
 }
 func (UnimplementedPositionServiceServer) GetAll(context.Context, *GetAllPositionRequest) (*GetAllPositionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
 }
-func (UnimplementedPositionServiceServer) GetById(context.Context, *GetByIdPositionRequest) (*GetByIdPositionResponse, error) {
+func (UnimplementedPositionServiceServer) GetById(context.Context, *PositionId) (*Position, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetById not implemented")
 }
-func (UnimplementedPositionServiceServer) Update(context.Context, *UpdatePositionRequest) (*UpdatePositionResponse, error) {
+func (UnimplementedPositionServiceServer) Update(context.Context, *UpdatePositionRequest) (*PositionId, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Update not implemented")
 }
-func (UnimplementedPositionServiceServer) Delete(context.Context, *DeletePositionRequest) (*DeletePositionResponse, error) {
+func (UnimplementedPositionServiceServer) Delete(context.Context, *PositionId) (*PositionId, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
 }
 func (UnimplementedPositionServiceServer) mustEmbedUnimplementedPositionServiceServer() {}
@@ -163,7 +163,7 @@ func _PositionService_GetAll_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _PositionService_GetById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetByIdPositionRequest)
+	in := new(PositionId)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -175,7 +175,7 @@ func _PositionService_GetById_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: "/position_service.PositionService/GetById",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PositionServiceServer).GetById(ctx, req.(*GetByIdPositionRequest))
+		return srv.(PositionServiceServer).GetById(ctx, req.(*PositionId))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -199,7 +199,7 @@ func _PositionService_Update_Handler(srv interface{}, ctx context.Context, dec f
 }
 
 func _PositionService_Delete_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeletePositionRequest)
+	in := new(PositionId)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func _PositionService_Delete_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/position_service.PositionService/Delete",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PositionServiceServer).Delete(ctx, req.(*DeletePositionRequest))
+		return srv.(PositionServiceServer).Delete(ctx, req.(*PositionId))
 	}
 	return interceptor(ctx, in, info, handler)
 }

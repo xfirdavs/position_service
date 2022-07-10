@@ -9,6 +9,7 @@ import (
 	pb "position_service/genproto/position_service"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -22,33 +23,71 @@ func NewPositionRepo(db *pgxpool.Pool) storage.PositionI {
 	}
 }
 
-func (r *positionRepo) Create(ctx context.Context, entity *pb.CreatePositionRequest) (id string, err error) {
-	query := `
-		INSERT INTO position (
+func (r *positionRepo) Create(ctx context.Context, entity *pb.CreatePositionRequest) (id *pb.PositionId, err error) {
+	positionQuery := `
+		INSERT INTO position(
 			id,
 			name,
 			profession_id,
 			company_id
-		) 
-		 VALUES ($1, $2, $3,$4)
+		) VALUES ($1, $2, $3, $4);
+
 	`
+	positionAttributesQuery := `
+			INSERT INTO position_attributes(
+				id,
+				attribute_id,
+				position_id,
+				value
+			)VALUES ($1,$2,$3,$4)
+		`
+	positionId := uuid.New()
 
-	id = uuid.NewString()
-
-	_, err = r.db.Exec(
+	client, err := r.db.Acquire(context.TODO())
+	transact, err := client.BeginTx(context.TODO(), pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer transact.Rollback(context.TODO())
+	_, err = transact.Exec(
 		ctx,
-		query,
-		id,
+		positionQuery,
+		positionId,
 		entity.Name,
 		entity.ProfessionId,
 		entity.CompanyId,
 	)
-
 	if err != nil {
-		return "", fmt.Errorf("error while inserting position err: %w", err)
+		return nil, err
+	}
+	positionAttributes := entity.PositionAttributes
+
+	for k := range positionAttributes {
+		attribute_id, err := uuid.NewRandom()
+		if err != nil {
+			return nil, err
+		}
+		_, err = transact.Exec(
+			ctx,
+			positionAttributesQuery,
+			attribute_id,
+			positionAttributes[k].AttributeId,
+			positionId,
+			positionAttributes[k].Value,
+		)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return id, nil
+	err = transact.Commit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.PositionId{
+		Id: positionId.String(),
+	}, nil
 }
 
 func (r *positionRepo) GetAll(ctx context.Context, req *pb.GetAllPositionRequest) (*pb.GetAllPositionResponse, error) {
@@ -110,13 +149,16 @@ func (r *positionRepo) GetAll(ctx context.Context, req *pb.GetAllPositionRequest
 		resp.Positions = append(resp.Positions, &position)
 	}
 
+	// query1 :=`SELECT attribute_id, value FROM position_attributes WHERE position_id=$1`
+	// rows,err = r.db.Query(ctx,query1,req.)
+
 	return &resp, nil
 }
 
-func (r *positionRepo) GetById(ctx context.Context, req *pb.GetByIdPositionRequest) (*pb.GetByIdPositionResponse, error) {
-	var resp pb.GetByIdPositionResponse
+func (r *positionRepo) GetById(ctx context.Context, req *pb.PositionId) (*pb.Position, error) {
+	var resp pb.Position
 	query := `
-		SELECT * FROM position WHERE id=$1
+		SELECT id,name,profession_id,company_id FROM position WHERE id=$1
 	`
 	rows, err := r.db.Query(ctx, query, req.Id)
 	if err != nil {
@@ -124,7 +166,7 @@ func (r *positionRepo) GetById(ctx context.Context, req *pb.GetByIdPositionReque
 	}
 
 	for rows.Next() {
-		var position pb.GetByIdPositionResponse
+		var position pb.Position
 
 		err = rows.Scan(
 			&position.Id,
@@ -143,47 +185,141 @@ func (r *positionRepo) GetById(ctx context.Context, req *pb.GetByIdPositionReque
 		resp.CompanyId = position.CompanyId
 	}
 
+	query1 := `SELECT json_build_object('id',id,'attribute_id', attribute_id,'position_id',position_id, 'value', value) AS data
+	FROM position_attributes WHERE position_id=$1`
+	rows1, err := r.db.Query(ctx, query1, req.Id)
+
+	if err != nil {
+		return nil, fmt.Errorf("error while getting rows %w", err)
+	}
+
+	for rows1.Next() {
+		var positions pb.GetPositionAttributes
+
+		err = rows1.Scan(
+			&positions,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("error while scanning position err: %w", err)
+		}
+
+		resp.PositionAttributes = append(resp.PositionAttributes, positions)
+
+	}
+
 	return &resp, nil
 
 }
 
-func (r *positionRepo) Update(ctx context.Context, entity *pb.UpdatePositionRequest) (*pb.UpdatePositionResponse, error) {
-	var tempr pb.UpdatePositionResponse
-	query := `
-		UPDATE position SET name=$1 type=$2 WHERE id=$3
+func (r *positionRepo) Update(ctx context.Context, entity *pb.UpdatePositionRequest) (*pb.PositionId, error) {
+	var id pb.PositionId
+	id.Id = entity.Id
+	queryPosition := `
+		UPDATE position SET name=$1, profession_id=$2, company_id=$3 WHERE id=$4
+	`
+	queryDeletePosAttr := `DELETE FROM position_attributes WHERE position_id=$1`
+	queryPosAttr := `
+		INSERT INTO position_attributes(
+			id,
+			attribute_id,
+			position_id,
+			value
+		)VALUES ($1,$2,$3,$4);
 	`
 
-	_, err := r.db.Exec(
+	client, err := r.db.Acquire(context.TODO())
+	transact, err := client.BeginTx(context.TODO(), pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer transact.Rollback(context.TODO())
+	_, err = transact.Exec(
 		ctx,
-		query,
+		queryPosition,
 		entity.Name,
-		entity.Id,
 		entity.ProfessionId,
 		entity.CompanyId,
+		id.Id,
 	)
-
 	if err != nil {
-		return &tempr, fmt.Errorf("error while updating position err: %w", err)
+		return nil, err
 	}
 
-	return &tempr, nil
+	_, err = transact.Exec(
+		ctx,
+		queryDeletePosAttr,
+		entity.Id,
+	)
+	positionAttributes := entity.PositionAttributes
+	for k := range positionAttributes {
+		attribute_id, err := uuid.NewRandom()
+		if err != nil {
+			return nil, err
+		}
+		_, err = transact.Exec(
+			ctx,
+			queryPosAttr,
+			attribute_id,
+			positionAttributes[k].AttributeId,
+			entity.Id,
+			positionAttributes[k].Value,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = transact.Commit(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err != nil {
+		return &id, fmt.Errorf("error while updating position err: %w", err)
+	}
+
+	return &id, nil
 }
 
-func (r *positionRepo) Delete(ctx context.Context, entity *pb.DeletePositionRequest) (*pb.DeletePositionResponse, error) {
-	var tempr pb.DeletePositionResponse
-	query := `
+func (r *positionRepo) Delete(ctx context.Context, entity *pb.PositionId) (*pb.PositionId, error) {
+	var id pb.PositionId
+	id.Id = entity.Id
+	queryPositionAttributes := `
+		DELETE FROM position_attributes WHERE position_id=$1
+	`
+	queryPosition := `
 		DELETE FROM position WHERE id=$1
 	`
 
-	_, err := r.db.Exec(
+	client, err := r.db.Acquire(ctx)
+	transact, err := client.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+	defer transact.Rollback(ctx)
+	_, err = transact.Exec(
 		ctx,
-		query,
+		queryPositionAttributes,
+		id.Id,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = transact.Exec(
+		ctx,
+		queryPosition,
 		entity.Id,
 	)
 
+	err = transact.Commit(ctx)
 	if err != nil {
-		return &tempr, fmt.Errorf("error while deleting position err: %w", err)
+		return nil, err
 	}
 
-	return &tempr, nil
+	if err != nil {
+		return nil, fmt.Errorf("error while deleting position err: %w", err)
+	}
+
+	return &id, nil
 }

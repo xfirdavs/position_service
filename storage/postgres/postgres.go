@@ -13,7 +13,6 @@ type Store struct {
 	profession storage.ProfessionI
 	attribute  storage.AttributeI
 	position   storage.PositionI
-	posattr    storage.PosAttrI
 }
 
 func NewPostgres(psqlConnString string, cfg config.Config) (storage.StorageI, error) {
@@ -55,12 +54,4 @@ func (s *Store) Position() storage.PositionI {
 	}
 
 	return s.position
-}
-
-func (s *Store) PosAttr() storage.PosAttrI {
-	if s.posattr == nil {
-		s.posattr = NewPosAttrRepo(s.db)
-	}
-
-	return s.posattr
 }
