@@ -145,17 +145,65 @@ func (r *positionRepo) GetAll(ctx context.Context, req *pb.GetAllPositionRequest
 		if err != nil {
 			return nil, fmt.Errorf("error while scanning position err: %w", err)
 		}
+		xpositionAttributes, err := r.GetPositionAttributesExample(ctx, position.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		position.PositionAttributes = append(position.PositionAttributes, xpositionAttributes)
 
 		resp.Positions = append(resp.Positions, &position)
 	}
 
-	// query1 :=`SELECT attribute_id, value FROM position_attributes WHERE position_id=$1`
-	// rows,err = r.db.Query(ctx,query1,req.)
-
 	return &resp, nil
 }
 
+func (r *positionRepo) GetPositionAttributesExample(ctx context.Context, id string) (*pb.GetPositionAttributes, error) {
+	var resp pb.GetPositionAttributes
+	query := `SELECT 
+	pa.id, 
+	pa.attribute_id,
+	pa.position_id,
+	pa.value,
+	ap.name,
+	ap.type 
+	FROM position_attributes AS pa JOIN attribute ap ON ap.id=pa.attribute_id WHERE pa.position_id=$1
+	`
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("error while getting rows %w", err)
+	}
+
+	for rows.Next() {
+		var position_attibutes pb.GetPositionAttributes
+
+		err = rows.Scan(
+			&position_attibutes.Id,
+			&position_attibutes.AttributeId,
+			&position_attibutes.PositionId,
+			&position_attibutes.Value,
+			&position_attibutes.AttributeName,
+			&position_attibutes.AttributeType,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("error while scanning position err: %w", err)
+		}
+
+		resp.Id = position_attibutes.Id
+		resp.AttributeId = position_attibutes.AttributeId
+		resp.PositionId = position_attibutes.PositionId
+		resp.Value = position_attibutes.Value
+		resp.AttributeName = position_attibutes.AttributeName
+		resp.AttributeType = position_attibutes.AttributeType
+
+	}
+	return &resp, nil
+
+}
+
 func (r *positionRepo) GetById(ctx context.Context, req *pb.PositionId) (*pb.Position, error) {
+
 	var resp pb.Position
 	query := `
 		SELECT id,name,profession_id,company_id FROM position WHERE id=$1
@@ -184,29 +232,12 @@ func (r *positionRepo) GetById(ctx context.Context, req *pb.PositionId) (*pb.Pos
 		resp.ProfessionId = position.ProfessionId
 		resp.CompanyId = position.CompanyId
 	}
-
-	query1 := `SELECT json_build_object('id',id,'attribute_id', attribute_id,'position_id',position_id, 'value', value) AS data
-	FROM position_attributes WHERE position_id=$1`
-	rows1, err := r.db.Query(ctx, query1, req.Id)
-
+	xpositionAttributes, err := r.GetPositionAttributesExample(ctx, req.Id)
 	if err != nil {
-		return nil, fmt.Errorf("error while getting rows %w", err)
+		return nil, err
 	}
 
-	for rows1.Next() {
-		var positions pb.GetPositionAttributes
-
-		err = rows1.Scan(
-			&positions,
-		)
-
-		if err != nil {
-			return nil, fmt.Errorf("error while scanning position err: %w", err)
-		}
-
-		resp.PositionAttributes = append(resp.PositionAttributes, positions)
-
-	}
+	resp.PositionAttributes = append(resp.PositionAttributes, xpositionAttributes)
 
 	return &resp, nil
 
