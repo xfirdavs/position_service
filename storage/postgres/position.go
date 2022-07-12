@@ -150,7 +150,9 @@ func (r *positionRepo) GetAll(ctx context.Context, req *pb.GetAllPositionRequest
 			return nil, err
 		}
 
-		position.PositionAttributes = xpositionAttributes
+		for i := 0; i < len(xpositionAttributes); i++ {
+			position.PositionAttributes = append(position.PositionAttributes, &xpositionAttributes[i])
+		}
 
 		resp.Positions = append(resp.Positions, &position)
 	}
@@ -158,7 +160,7 @@ func (r *positionRepo) GetAll(ctx context.Context, req *pb.GetAllPositionRequest
 	return &resp, nil
 }
 
-func (r *positionRepo) GetPositionAttributesExample(ctx context.Context, id string) ([]*pb.GetPositionAttributes, error) {
+func (r *positionRepo) GetPositionAttributesExample(ctx context.Context, id string) ([]pb.GetPositionAttributes, error) {
 	var resp []pb.GetPositionAttributes
 	query := `SELECT 
 	pa.id, 
@@ -193,7 +195,7 @@ func (r *positionRepo) GetPositionAttributesExample(ctx context.Context, id stri
 		resp = append(resp, position_attibutes)
 
 	}
-	return &resp, nil
+	return resp, nil
 
 }
 
@@ -232,7 +234,9 @@ func (r *positionRepo) GetById(ctx context.Context, req *pb.PositionId) (*pb.Pos
 		return nil, err
 	}
 
-	resp.PositionAttributes = xpositionAttributes
+	for i := 0; i < len(xpositionAttributes); i++ {
+		resp.PositionAttributes = append(resp.PositionAttributes, &xpositionAttributes[i])
+	}
 
 	return &resp, nil
 
